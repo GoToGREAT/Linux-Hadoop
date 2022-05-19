@@ -1,0 +1,45 @@
+hadoop 활용
+
+구성 : 분석 데이터, 맵, 리듀스
+
+- 위치를 이동한다.
+cd map_red
+
+- 분석 데이터 파일을 만든다.
+nano homes.csv
+
+- 권한을 부여한다.
+chmod 765 homes.csv
+
+- 데이터 파일을 분산저장공간으로 이동한다.
+hdfs dfs -copyFromLocal homes.csv /user/hdoop/input
+
+- 맵을 파이썬으로 만든다.
+nano homes_mapper.py
+
+- 리듀스를 파이썬으로 만든다.
+nano homes_reducer.py
+
+- 하둡을 이용한다. // 맵과 리듀스 파일이 map_red에 있기 때문에 이 디렉토리에서 명령어를 실행해야한다.
+~/map_red$ hadoop jar $HADOOP_HOME/share/hadoop/tools/lib/hadoop-streaming-3.2.2.jar -files homes_mapper.py,homes_reducer.py -input /user/hdoop/input/homes.csv -output /user/hdoop/output -mapper homes_mapper.py -reducer homes_reducer.py
+
+- 결과물을 확인한다.
+hdfs dfs -cat /user/hdoop/output/part-00000
+쓰리룸의 최대 금액 : 185, 최소 금액 : 87
+
+- 혹시 하둡이 되지 않으면 로컬에서 명령어를 통해 오류를 확인한다. // 맵과 리듀스 파일이 map_red에 있기 때문에 이 디렉토리에서 명령어를 실행해야한다.
+~/map_red$ cat ./homes.csv | ./homes_mapper.py | sort | ./homes_reducer.py
+
+- 다시 분석 하기 전 결과물 저장 파일을 삭제해야한다.
+hdfs dfs -rm -r /user/hdoop/output/
+
+활용 연습
+- 텍스트 파일 분석 단어 수 세기
+~/map_red$ cat uploadTestFile.txt| ./Mapper.py | sort -k 1 | ./WordCount.py| sort -r -n -k 2
+
+- 연도별 비행기 총 승객 수, 월별 평균 승객 수
+hadoop jar $HADOOP_HOME/share/hadoop/tools/lib/hadoop-streaming-3.2.2.jar -files average_mapper.py,average.py -input /user/hdoop/input/airtravle.csv -output /user/hdoop/output -mapper average_mapper.py -reducer average.py
+hadoop jar $HADOOP_HOME/share/hadoop/tools/lib/hadoop-streaming-3.2.2.jar -files average_mapper_p.py,average_reduce_p.py -input /user/hdoop/input/airtravle.csv -output /user/hdoop/output -mapper average_mapper_p.py -reducer average_reduce_p.py
+
+- homes.csv를 분석하여 침대가 3개인 집의 최소/최대 가격 구하기
+~/map_red$ hadoop jar $HADOOP_HOME/share/hadoop/tools/lib/hadoop-streaming-3.2.2.jar -files homes_mapper.py,homes_reducer.py -input /user/hdoop/input/homes.csv -output /user/hdoop/output -mapper homes_mapper.py -reducer homes_reducer.py

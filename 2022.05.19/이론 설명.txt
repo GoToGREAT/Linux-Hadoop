@@ -1,0 +1,13 @@
+Storage : 분산환경에서 데이터 입출력(HDFS)
+Process : 분산 환경에서 처리, 분석(통계,ML) (MapReduce, Spark)
+
+
+MapReduce를 사용하여 분석하는 예
+텍스트 파일로부터 각 단어의 빈도수를 계산하는 예
+	- Mapper : 텍스트 파일에서 한행을 읽어서 단어별로 쪼갠 후 다음 단계로 전달한다.
+	 - Suffle(섞어준다), Sort(동일 단어는 인접한 순서로 배치됨)
+	- Reduce : Mapper에서 전달된 단어들의 빈도수를 계산하여 다음 단계로 전달한다.
+	 - 리듀서의 출력을 파일에 저장
+
+	hadoop-streaming-xxx.jar
+
