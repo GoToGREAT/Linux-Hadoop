@@ -1,0 +1,206 @@
+- 파이썬에 hdfs 설치
+파이썬 프롬프트에 pip install hdfs 명령어 입력
+
+- 파이썬 명령어를 통해 하둡 hdfs 파일 연결
+import pandas as pd
+from hdfs import InsecureClient
+
+client_hdfs = InsecureClient('http://192.168.184.128:9870')  # namenode의 웹 인터페이스
+# 내부 ip 주소는 리눅스에서 ip addr 입력하여 알 수 있음.
+with client_hdfs.read('/user/csv/sample.csv') as reader:
+    df = pd.read_csv(reader,index_col=0)
+print( df )
+
+- 하둡
+nano.bashrc
+제일 아랫줄에 export HIVE_HOME=/home/hduser/hive-3.1.2
+export PATH=$PATH:$HIVE_HOME/bin 
+
+source .bashrc #수정한 bashrc를 시스템에 반영
+echo $HIVE_HOME # 정상작동 확인
+echo $PATH # 정상작동 확인
+
+
+cd hive-3.1.2
+cd bin
+nano hive-config.sh
+제일 아래 export HADOOP_HOME=/home/hduser/hadoop
+
+source hive-config.sh
+echo $HADOOP-HOME
+echo $HADOOP_HOME
+
+hdfs dfs -mkdir /tmp
+
+hdfs dfs -chmod g+w /tmp
+# tmp 폴더에 대해 그룹(g)에 쓰기(w) 권한 부여
+
+
+hdfs dfs -ls -R / # 확인
+
+hdfs dfs -mkdir -p /user/hive/warehouse # -p는 없으면 부모부터 만들어라
+hdfs dfs -chmod g+w /user/hive/warehouse
+hdfs dfs -ls -R /user
+
+cd hive-3.1.2/
+ls
+cd conf
+ls
+~/hive-3.1.2/conf$ cp hive-default.xml.template hive-site.xml # 파일 복사
+
+~/hive-3.1.2/bin$ schematool -dbType derby -initSchema
+
+~/hive-3.1.2/lib$ rm guava-19.0.jar
+
+cp \sHADOOP_HOME/share/hadoop/hdfs/lib/g
+
+find $HADOOP_HOME -type f | grep 'guava'
+
+cp /home/hduser/hadoop/share/hadoop/hdfs/lib/guava-27.0-jre.jar ./
+
+~/hive-3.1.2/bin$ schematool -dbType derby -initSchema
+
+nano  ../conf/hive-site.xml 
+ctrl + w
+transactional
+alt + w
+&#8; delete
+
+schematool -dbType derby -initSchema
+
+nano ../conf/hive-site.xml
+
+  <property>
+    <name>system:java.io.tmpdir</name>
+    <value>/tmp/hive/java</value>
+  </property>
+  <property>
+    <name>system:user.name</name>
+    <value>${user.name}</value>
+  </property>
+입력
+
+hive
+
+
+Metadata : 데이터의 정보
+<div id='empinfo'>xxxxxxxxxxxxxxxxxx</div>
+--------------------
+메타 데이터            데이터
+
+
+하둡은 데이터 양이 많을수록 성능이 좋아진다.
+
+
+hive 대체품 hiveserver2 나옴
+
+
+-- Hive 명령어
+hive
+ctrl + c  -> exit;
+show databases;
+show tables;
+
+create database userdb;
+show databases;
+use userdb;
+
+CREATE TABLE IF NOT EXISTS employee ( 
+eid int, name String,
+salary String, destination String )
+COMMENT 'Employee details'
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\n'
+STORED AS TEXTFILE
+TBLPROPERTIES ('NO_AUTO_COMPACTION' = 'true');
+
+show tables;
+SELECT * FROM employee;
+
+exit;
+cd
+nano employee.csv
+
+1201,Gopal,45000,Technical manager
+1202,Manisha,45000,Proof reader
+1203,Masthanvali,40000,Technical writer
+1204,Kiran,40000,Hr Admin
+1205,Kranthi,30000,Op Admin
+
+cd hive-3.1.2/bin/
+
+hive
+use userdb;
+LOAD DATA  LOCAL INPATH  '/home/hduser/employee.csv' OVERWRITE INTO TABLE employee;
+SELECT * FROM employee;
+
+-- Metadata
+<div id ='empinfo'>xxxxxxxxxx</div>
+
+SELECT AVG(salary) FROM employee;
+
+exit;
+
+
+$HADOOP_HOME/etc/hadoop/core-site.xml 하단에 아래 내용 추가
+cd hadoop/etc/hadoop/
+nano core-site.xml
+
+<property>
+     <name>hadoop.proxyuser.hduser.hosts</name>
+     <value>*</value>
+</property>
+<property>
+     <name>hadoop.proxyuser.hduser.groups</name>
+     <value>*</value>
+</property>
+
+
+$HIVE_HOME/conf/hive-site.xml 하단에 아래의 내용 추가
+cd /home/hduser/hive-3.1.2/conf
+nano hive-site.xml
+
+<property>
+    <name>hive.server2.active.passive.ha.enable</name>
+    <value>true</value>
+  </property>
+  <property>
+    <name>hive.metastore.event.db.notification.api.auth</name>
+    <value>false</value>
+  </property>
+
+stop-all.sh
+start-all.sh
+
+cd hive-3.1.2/bin/
+
+hiveserver2
+
+-> new terminal
+
+cd hive-3.1.2/bin/
+beeline
+
+!connect jdbc:hive2://localhost:10000/userdb;
+hduser
+hduser
+
+show tables;
+SELECT * FROM employee;
+SELECT AVG(salary) FROM employee;
+
+hiveserver2에 외부에서 접속(beeline CLI로 확인)
+Java 프로그램
+Python 접속
+
+hive를 연결하는 java 프로그램을 작성할 때 요구되는 라이브러리
+hive-jdbc-*.jar
+
+https://mvnrepository.com/
+hive-jdbc-3.1.2.jar
+
+
+
+
+
